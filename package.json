@@ -1,6 +1,6 @@
 {
-  "name": "swap-chat-js",
-  "version": "1.0.21",
+  "name": "swap-chat-sdk",
+  "version": "1.0.0",
   "description": " ",
   "main": "dist/index.js",
   "scripts": {
