@@ -92,9 +92,6 @@ const config = {
       globals: {
         axios: 'axios',
         web3:'Web3'
-        // util:"util",
-        // Buffer:'buffer',
-        // url:'url'
       },
     },
   ],
