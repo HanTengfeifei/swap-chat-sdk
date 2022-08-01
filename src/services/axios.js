@@ -17,9 +17,7 @@ axiosApiInstance.defaults.withCredentials = false;
 axiosApiInstance.interceptors.request.use(
   async (config) => {
     const newConfig = { ...config };
-    let accessToken = axiosApiInstance.accessToken
-      ? axiosApiInstance.accessToken
-      : "";
+    let accessToken = tokenMgr().getToken()
     if (accessToken) {
       let jwtToken = accessToken.substring(7);
       let tokenArr = jwtToken.split(".");
@@ -44,11 +42,11 @@ axiosApiInstance.interceptors.request.use(
           token.data.data &&
           token.data.data.access_token
         ) {
-          axiosApiInstance.access_token = `Bearer ${token.data.data.access_token}`;
-          newConfig.headers["Authorization"] = axiosApiInstance.access_token;
+          tokenMgrt().setToken(token.data.data.access_token);
+          newConfig.headers["Authorization"] = tokenMgrt().getToken();
           return newConfig;
         } else {
-          axiosApiInstance.access_token = "";
+          tokenMgrt().setToken('');
         }
       }
       newConfig.headers["Authorization"] = accessToken;
@@ -79,6 +77,21 @@ export function isFreshToken(accessToken) {
     return true;
   }
   return false;
+}
+export function tokenMgr() {
+  return {
+    getToken: (type = "swap_chat_sdk_access_token") => {
+      let accessToken = localStorage.getItem(type);
+      return accessToken ? accessToken : "";
+    },
+    setToken: (v='') => {
+      if (v) {
+        localStorage.setItem("swap_chat_sdk_access_token", `Bearer ${v}`);
+      } else {
+        localStorage.setItem("swap_chat_sdk_access_token", "");
+      }
+    },
+  };
 }
 
 export default axiosApiInstance;

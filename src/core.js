@@ -2,10 +2,10 @@ import { addEvent, isDOM, createElement, getElementById, isObj } from "./utils";
 import { baseUrl } from "./constants";
 import { INTERFACE_TYPE, PLATFORM_ENUM } from "./services/type";
 import { merge, mergeConfig } from "./utils";
-import { signMetamask } from "./services/utils";
+import { signMetamask,register,getOpenSeaInfo,creactThreads } from "./services/utils";
 import { getRooms } from "./services/api";
-import axiosApiInstance, { isFreshToken } from "./services/axios";
-export class SwapChatSdk {
+import axiosApiInstance, { isFreshToken, tokenMgr } from "./services/axios";
+ class SwapChatSdk {
   constructor(content, container, options = {}, params = {}) {
     if (!isDOM()(content) || !isDOM()(container)) {
       return this;
@@ -14,10 +14,11 @@ export class SwapChatSdk {
     const defaultParams = {
       platform: PLATFORM_ENUM.SWAPCHAT, //PLATFORM_ENUM.SWAPCHAT,PLATFORM_ENUM.TWITTER,LATFORM_ENUM.OPENSEA,PLATFORM_ENUM.DISCORD
       type: INTERFACE_TYPE.SINGLE, //“single”,INTERFACE_TYPE.GROUP,INTERFACE_TYPE.THREAD,INTERFACE_TYPE.CUSTOMER
-      roomPayload: {
+      room_payload: {
         //## type===INTERFACE_TYPE.SINGLE
         //swapchat
         swapchat_user_id: "",
+        user_id:'',
         user_avatar: "", // 可选
         user_name: "", // 可选
         //twitter
@@ -39,7 +40,6 @@ export class SwapChatSdk {
         //## type===INTERFACE_TYPE.THREAD
         //swapchat
         is_thread: "true", //"false","true"
-        room_id: "",
         msg_id: "",
         user_name: "",
         user_avatar: "",
@@ -60,7 +60,7 @@ export class SwapChatSdk {
         //#.........
       },
       roomId: "",
-      loginPaylod: {
+      login_paylod: {
         login_random_secret: "",
         signature: "",
         wallet_address: "",
@@ -114,10 +114,11 @@ export class SwapChatSdk {
     let {
       platform = PLATFORM_ENUM.SWAPCHAT,
       type = INTERFACE_TYPE.SINGLE,
-      roomPayload: {
+      room_payload: {
         //## type===INTERFACE_TYPE.SINGLE
         //swapchat
         swapchat_user_id,
+        user_id,
         user_avatar, // 可选
         user_name, // 可选
         //twitter
@@ -132,6 +133,7 @@ export class SwapChatSdk {
         users: [], //[{user_id:"",user_avatar:"",user_name:""}]
         //twitter
         space_id,
+        space_title,
         //opensea
         collection_name,
         //discord
@@ -139,7 +141,6 @@ export class SwapChatSdk {
         //## type===INTERFACE_TYPE.THREAD
         //swapchat
         is_thread, //"false","true"
-        room_id,
         msg_id,
         // user_name,
         // user_avatar,
@@ -159,30 +160,32 @@ export class SwapChatSdk {
         //discord
         //#.........
       },
-      roomId,
+      room_id,
       access_token,
-      loginPaylod: { login_random_secret, signature },
+      login_paylod: { login_random_secret, signature },
+      login_paylod,
     } = that.defaultParams;
-    let targetToken = access_token || axiosApiInstance.access_token;
-    let targetRoomId = roomId || "";
+    let targetToken = access_token || tokenMgr().getToken();
+    let targetRoomId = room_id || "";
     let tartgetMessageId = ''
     let iframeUrl = `${baseUrl}/chat/chatWebPage?platform=${platform}&fromPage=normal`;
-    if (!isFreshToken(token)) {
+    if (!isFreshToken(targetToken)) {
       if (
-        loginPaylod &&
+        login_paylod &&
         login_random_secret &&
         signature &&
-        loginPaylod.wallet_address &&
-        loginPaylod.user_avatar
+        login_paylod.wallet_address &&
+        login_paylod.user_avatar
       ) {
         targetToken = await loginAfterSign(
           signature,
-          loginPaylod.wallet_address,
+          login_paylod.wallet_address,
           login_random_secret,
-          loginPaylod.user_avatar
+          login_paylod.user_avatar
         );
+      }else{
+        targetToken = await signMetamask(platform);
       }
-      targetToken = await signMetamask();
     }
     if (!targetToken) {
       return;
@@ -201,6 +204,7 @@ export class SwapChatSdk {
     // }
     async function getRoomIdByParams(params){
       let roomId = null
+      console.log('rooms-params',params)
       const roomData  = await getRooms({
         ...params,
       });
@@ -217,30 +221,23 @@ export class SwapChatSdk {
       switch (platType) {
          //thread
          case `${PLATFORM_ENUM.OPENSEA}-${INTERFACE_TYPE.THREAD}`:
-          // if (opensea_item_token_id&&opensea_item_contract_address&&chain_name&&opensea_coll_slug) {
-          //   let snapshotRoomId = await getRoomIdByParams({
-          //     opensea_coll_slug:opensea_coll_slug,
-          //   });
-          //   if (snapshotRoomId) {
-          //     targetRoomId = snapshotRoomId;
-          //   }
-            // if (room_id) {
-            //   targetRoomId = room_id;
-            // }
+          if (opensea_item_token_id && opensea_item_contract_address && chain_name && opensea_coll_slug) {
+            let roomIdAndMsgId = await creactThreads({
+              is_opensea_item_thread:true,
+              opensea_coll_slug:opensea_coll_slug,
+              opensea_item_token_id:opensea_item_token_id,
+              opensea_item_contract_address,
+              chain_name
+            });
+            if (roomIdAndMsgId) {
+              targetRoomId = roomIdAndMsgId.room_id;
+              tartgetMessageId = roomIdAndMsgId.msg_id
+            }
+          }
           break;
         case `${PLATFORM_ENUM.SWAPCHAT}-${INTERFACE_TYPE.THREAD}`:
-          // if (space_id) {
-          //   let snapshotRoomId = await getRoomIdByParams({
-          //     is_twitter_space:true,
-          //     space_id,
-          //     space_title,
-          //   });
-          //   if (snapshotRoomId) {
-          //     targetRoomId = snapshotRoomId;
-          //   }
-          // }
-          if (room_id) {
-              targetRoomId = room_id;
+          if (room_payload.room_id) {
+              targetRoomId = room_payload.room_id;
               tartgetMessageId = msg_id
             }
           break;
@@ -258,31 +255,52 @@ export class SwapChatSdk {
           }
           break;
         case `${PLATFORM_ENUM.OPENSEA}-${INTERFACE_TYPE.SINGLE}`:
-          if (wallet_address) {
+          if (user_name) {
+            const c_address  = await getOpenSeaInfo({
+              opensea_user_id: user_name,
+            });
+            if(c_address){
+            const c_user_id  = await register({
+              platform:PLATFORM_ENUM.OPENSEA,
+              user_name: c_address,
+            });
+            if(c_user_id){
             let snapshotRoomId = await getRoomIdByParams({
               target_user_avatar:user_avatar,
-              item_contract_address:wallet_address
+              user_id:c_user_id
             });
             if (snapshotRoomId) {
               targetRoomId = snapshotRoomId;
             }
+           }
           }
+        }
           break;
         case `${PLATFORM_ENUM.DISCORD}-${INTERFACE_TYPE.SINGLE}`:
-          if (discord_username||user_name) {
-            let snapshotRoomId = await getRoomIdByParams({
-              user_name:discord_username||user_name,
+          if ((discord_username||user_name)&&user_id) {
+            const c_user_id  = await register({
+              platform:PLATFORM_ENUM.DISCORD,
+              user_name: `${discord_username||user_name}#${user_id}`,
             });
-            if (snapshotRoomId) {
-              targetRoomId = snapshotRoomId;
+            if(c_user_id){
+              let snapshotRoomId = await getRoomIdByParams({
+                user_id:c_user_id,
+              });
+              if (snapshotRoomId) {
+                targetRoomId = snapshotRoomId;
+              }
             }
           }
           break;
         case `${PLATFORM_ENUM.TWITTER}-${INTERFACE_TYPE.SINGLE}`:
-          if (twitter_handle && twitter_avatar) {
+          if (user_name) {
+            const c_user_id  = await register({
+              platform:PLATFORM_ENUM.TWITTER,
+              user_name: user_name,
+            });
             let snapshotRoomId = await getRoomIdByParams({
-              user_name:twitter_handle||user_name,
-              target_user_avatar:twitter_avatar
+              user_id:c_user_id,
+              target_user_avatar:user_avatar
             });
             if (snapshotRoomId) {
               targetRoomId = snapshotRoomId;
@@ -292,6 +310,7 @@ export class SwapChatSdk {
           //group
           case `${PLATFORM_ENUM.SWAPCHAT}-${INTERFACE_TYPE.GROUP}`:
             if ((Array.isArray(users))) {
+              //暂时不支持
               const snapshotRoomId = await getRoomIdByParams({
                 user_ids:users.map((item)=>{
                   return item.user_id
@@ -338,32 +357,29 @@ export class SwapChatSdk {
               }
             }
             break;
+            default:
+              targetRoomId = ''
 
       }
     }
-    iframeUrl = `${baseUrl}/chat/chatWebPage?roomId=${encodeURIComponent(
-      targetRoomId
-    )}&access_token=${encodeURIComponent(targetToken)}&msg_id=${encodeURIComponent(tartgetMessageId)}`;
-    // try {
-    //   if (user.name || friend.name) {
-    //     iframeUrl += `&userHash=${encodeURIComponent(
-    //       user.name + "@@" + friend.name
-    //     )}`;
-    //   }
-    //   if (space.spacid && space.title) {
-    //     let spaceHash = `${space.id}@@${space.title}`;
-    //     iframeUrl += `&spaceHash=${encodeURIComponent(spaceHash)}`;
-    //   }
-    //   if (user.avatarUrl) {
-    //     iframeUrl += `&userAvatar=${encodeURIComponent(user.avatarUrl)}`;
-    //   }
-    //   if (friend.avatarUrl) {
-    //     iframeUrl += `&friendAvatar=${encodeURIComponent(friend.avatarUrl)}`;
-    //   }
-    //   if (friend.id) {
-    //     iframeUrl += `&friendId=${encodeURIComponent(friend.id)}`;
-    //   }
-    // } catch (e) {}
+    console.log('targetToken',targetToken)
+    try {
+      if (targetToken) {
+        iframeUrl += `access_token=${encodeURIComponent(targetToken)}`;
+      }
+      if (targetRoomId) {
+        iframeUrl += `&roomId=${encodeURIComponent(
+          targetRoomId
+        )}`;
+      }else{
+       let msg ='***The parameter named params may be set incorrectly, please set it according to the specification***'
+        console.log(msg)
+        return 
+      }
+      if (tartgetMessageId) {
+        iframeUrl += `&msg_id=${encodeURIComponent(tartgetMessageId)}`;
+      }
+    } catch (e) {}
     return iframeUrl;
   }
   async creatClientBox() {
@@ -458,3 +474,4 @@ export class SwapChatSdk {
 }
 SwapChatSdk.merge = merge;
 SwapChatSdk.mergeConfig = mergeConfig;
+export default SwapChatSdk

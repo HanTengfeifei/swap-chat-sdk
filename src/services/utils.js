@@ -2,7 +2,7 @@ import Web3 from "web3";
 import { PLATFORM_ENUM } from "./type";
 import * as chatApi from "./api";
 import moment from "moment";
-import axiosApiInstance from "./axios";
+import axiosApiInstance, { tokenMgr } from "./axios";
 const web3 = new Web3(window.ethereum);
 export async function getEthAccount() {
   let res = {
@@ -57,17 +57,18 @@ export const loginAfterSign = async (
     loginParams.user_avatar = decodeURIComponent(userAvatar);
   }
   const loginRes = await chatApi.login(loginParams);
-  if (loginRes.code === 0) {
+  if (loginRes && loginRes.code === 0) {
     const {
       data: { access_token },
     } = loginRes;
     if (access_token) {
-      axiosApiInstance.access_token = `Bearer ${access_token}`;
+      tokenMgr().setToken(access_token) ;
     }
-    return axiosApiInstance.access_token;
+    return `Bearer ${access_token}`
   }
 };
-export const signMetamask = async ({ platform = PLATFORM_ENUM.SWAPCHAT }) => {
+export const signMetamask = async ( platform = PLATFORM_ENUM.SWAPCHAT ) => {
+  let targetToken = ''
   // @ts-ignore
   let ethAccount = await getEthAccount();
   if (!ethAccount.address) {
@@ -105,9 +106,31 @@ Issued At: ${moment().utc().local().format("DD/MM/YYYY HH:mm")}`;
       .sign(signContent, address, "swapchat")
       .catch((e) => {});
     if (res) {
-      await loginAfterSign(res, address, signContent);
+      targetToken = await loginAfterSign(res, address, signContent);
     } else {
     }
   } else {
   }
+return targetToken
 };
+export const register  = async (params)=>{
+  const  Info = await chatApi.register({...params})
+  const {code,data:{user_id} } = Info
+  if(code ==0 &&user_id){
+    return user_id
+  }
+}
+export const getOpenSeaInfo  = async (params)=>{
+   const  openseaInfo = await chatApi.getOpenSeaInfo({...params})
+   const {code,data:{account:{address}} } = openseaInfo
+   if(code == 0 && address){
+    return address
+   }
+}
+export const creactThreads  = async (params)=>{
+   const  createThreadsRes = await chatApi.createThreads({...params})
+   const {code,data:{room_id,msg_id} } = createThreadsRes
+   if(code == 0 && room_id && msg_id){
+    return {room_id,msg_id}
+   }
+}
