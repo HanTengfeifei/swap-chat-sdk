@@ -68,13 +68,13 @@ Properties|Type|Value|Default|Description|Required
 ------- |:---------:|:---------:|:---------:|:---------:|:---------:|
 |user_id|string|none|none|user_id of the user to chat|yes
 |user_name |string|none|none|user_name of the user to chat|none
-|user_avatar |string|none|none|none|user_avatar of the user to chat｜no｜
+|user_avatar |string|none|none|user_avatar of the user to chat｜no
 ## When platform is opensea and the type is single
 Properties for the room_payload parameter object
 Properties|Type|Value|Default|Description|Required
 ------- |:---------:|:---------:|:---------:|:---------:|:---------:|
 |user_name |string|none|none|user_name of the user to chat|yes
-|user_avatar |string|none|none|none|user_avatar of the user to chat｜no
+|user_avatar |string|none|none|user_avatar of the user to chat｜no
 ## When platform is discord and the type is single
 Properties for the room_payload parameter object
 Properties|Type|Value|Default|Description|Required
@@ -86,7 +86,7 @@ Properties for the room_payload parameter object
 Properties|Type|Value|Default|Description|Required
 ------- |:---------:|:---------:|:---------:|:---------:|:---------:|
 |user_name |string|none|none|user_name of the user to chat|yes
-|user_avatar |string|none|none|none|user_avatar of the user to chat｜no
+|user_avatar |string|none|none|user_avatar of the user to chat｜no
 ## When platform is swapChat and the type is group
 Not currently supported
 ## When platform is opensea and the type is group
@@ -113,6 +113,13 @@ import SwapChatSdk from 'swap-chat-js';
 const SwapChatSdkStance = new SwapChatSdk({
     dom1,
     dom2
+    {width:400,height:600},{
+      platform:'twitter',
+      type:'single',
+      room_payload:{
+        user_name:'yihang1314'
+      }
+    }
   }
     );
 //  Methods requiring calls to instances instance.exect()
@@ -128,7 +135,12 @@ function App() {
   const containRef = useRef();
   useEffect(() => {
     const defaultParams = {
-      platform: "twitter",//platform
+      platform:'twitter',
+      type:'group',
+      room_payload:{
+          // user_name:'yihang1314'
+         space_id: '1MYxNnoyanwxw',
+      }
     };
     const SwapChatSdkStance = new SwapChatSdk(
       buttonRef.current,
@@ -177,8 +189,13 @@ export default {
         width: 400,
         height: 600},
       {
-
+      platform:'discord',
+      type:'single',
+      room_payload:{
+          user_name:'方庭#3162'
+        //  space_id: '1MYxNnoyanwxw',
       }
+    }
     );
     SwapChatSdkStance.exect();
   }
