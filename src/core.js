@@ -2,7 +2,7 @@ import { addEvent, isDOM, createElement, getElementById, isObj } from "./utils";
 import { baseUrl } from "./constants";
 import { INTERFACE_TYPE, PLATFORM_ENUM } from "./services/type";
 import { merge, mergeConfig } from "./utils";
-import { signMetamask,register,getOpenSeaInfo,creactThreads } from "./services/utils";
+import { signMetamask,loginAfterSign,register,getOpenSeaInfo,creactThreads } from "./services/utils";
 import { getRooms } from "./services/api";
 import axiosApiInstance, { isFreshToken, tokenMgr } from "./services/axios";
  class SwapChatSdk {
@@ -381,7 +381,7 @@ import axiosApiInstance, { isFreshToken, tokenMgr } from "./services/axios";
         return 
       }
       if (tartgetMessageId) {
-        iframeUrl += `&msg_id=${encodeURIComponent(tartgetMessageId)}`;
+        iframeUrl += `&threadMsgId=${encodeURIComponent(tartgetMessageId)}`;
       }
     } catch (e) {}
     return iframeUrl;
