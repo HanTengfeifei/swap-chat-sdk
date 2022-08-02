@@ -21,9 +21,10 @@ import SwapChatSdk from 'swap-chat-js';
 
 // You need to create an instance of SwapChatSdk Pass in two dom elements as parameters.
 // The first element is the trigger that brings up the element and the second element is the slot container for the chat tool
-const SwapChatSdkStance = new SwapChatSdk(
-      dom1,
-      dom2
+const SwapChatSdkStance = new SwapChatSdk({
+    dom1,
+    dom2
+  }
     );
 //  Methods requiring calls to instances instance.exect()
 SwapChatSdkStance.exect()
@@ -39,13 +40,6 @@ function App() {
   useEffect(() => {
     const defaultParams = {
       platform: "twitter",//platform
-      user: { name: "hantengfei5888", avatarUrl: "" },//user relate  name is required  
-      friend: {
-        name: "100trillionUSD",//name is required
-        avatarUrl: "",
-        id: "",
-      },//friend  relate
-      space: { id: "", title: "" }, //space room
     };
     const SwapChatSdkStance = new SwapChatSdk(
       buttonRef.current,
@@ -89,7 +83,13 @@ export default {
     const instance = getCurrentInstance()
      const SwapChatSdkStance = new SwapChatSdk(
       instance.refs.button,
-      instance.refs.container
+      instance.refs.container,
+      {
+        width: 400,
+        height: 600},
+      {
+
+      }
     );
     SwapChatSdkStance.exect();
   }

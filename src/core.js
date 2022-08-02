@@ -75,7 +75,7 @@ import axiosApiInstance, { isFreshToken, tokenMgr } from "./services/axios";
       ? merge({}, defaultParams, params)
       : defaultParams;
     this.status = false;
-    this.contenWrapper = content;
+    this.contentWrapper = content;
     this.button = `<div style="
      height: 44px; 
      min-width: 44px;
@@ -97,8 +97,12 @@ import axiosApiInstance, { isFreshToken, tokenMgr } from "./services/axios";
   }
   exect() {
     let that = this;
-    that.contenWrapper.innerHTML = that.button;
-    const firstButtonDom = that.contenWrapper.firstChild;
+    if(!that.contentWrapper ||!that.container || that.contentWrapper === that.container){
+      console.log('The first parameter and the second parameter cannot be the same dom element')
+      return 
+    }
+      that.contentWrapper.innerHTML = that.button;
+    const firstButtonDom = that.contentWrapper.firstChild;
     addEvent(firstButtonDom, "click", function () {
       if (that.status) {
         that.closeClient();

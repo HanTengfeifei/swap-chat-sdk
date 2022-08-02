@@ -7234,7 +7234,7 @@
 	    this.defaultOptions = isObj(options) ? merge({}, defaultOp, options) : defaultOp;
 	    this.defaultParams = isObj(params) ? merge({}, defaultParams, params) : defaultParams;
 	    this.status = false;
-	    this.contenWrapper = content;
+	    this.contentWrapper = content;
 	    this.button = "<div style=\"\n     height: 44px; \n     min-width: 44px;\n     border-radius: 999px;\n     padding: 0 20px;\n     display: flex; \n     align-items: center;\n     font-family: sans-serif;\n     background: #605DEC;\n     color: #ffffff;\n     \"\n     >\n     <div style=\"display: inline-block; width: 30px; height: 30px; margin-right: 10px;\">\n        <img style=\"width: 100%; margin-right: 10px; filter: drop-shadow(0px 4px 5px rgba(36, 36, 36, 0.45));\" src=\"https://chat.web3messaging.online/assets/icon/newHouseChatIcon.svg\" alt=\"\">\n     </div>\n        Create a SwapChat        \n    </div>";
 	    this.container = container;
 	  }
@@ -7243,8 +7243,14 @@
 	    key: "exect",
 	    value: function exect() {
 	      var that = this;
-	      that.contenWrapper.innerHTML = that.button;
-	      var firstButtonDom = that.contenWrapper.firstChild;
+
+	      if (!that.contentWrapper || !that.container || that.contentWrapper === that.container) {
+	        console.log('The first parameter and the second parameter cannot be the same dom element');
+	        return;
+	      }
+
+	      that.contentWrapper.innerHTML = that.button;
+	      var firstButtonDom = that.contentWrapper.firstChild;
 	      addEvent(firstButtonDom, "click", function () {
 	        if (that.status) {
 	          that.closeClient();

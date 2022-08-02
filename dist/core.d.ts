@@ -4,7 +4,7 @@ declare class SwapChatSdk {
     defaultOptions: Object | undefined;
     defaultParams: Object | undefined;
     status: boolean | undefined;
-    contenWrapper: any;
+    contentWrapper: any;
     button: string | undefined;
     container: any;
     exect(): void;
