@@ -38,6 +38,7 @@ Properties|Type|Value|Default|Description|Required
 |room_id |string|Generate a room_id according to the official api documentation|none|room_id corresponding to the chat room|If the value of the room_payload property is set, room_id does not need to be set. If room_payload is not set, then room_id is required
 |login_payload|object|{signature,wallet_address,login_random_secret,user_avatar}|{}|Login parameters that need to be set|If the value of the access_token attribute is set, the login_payload does not need to be set. If the access_token is not set, then the login_payload is required.
 |access_token |string|Generate a access_token according to the official api documentation|none|access_token corresponding to the login user|If the value of the login_payload property is set, access_token does not need to be set. If login_payload is not set, then access_token is required
+***
 Properties for the login_payload parameter object
 Properties|Type|Value|Default|Description|Required
 ------- |:---------:|:---------:|:---------:|:---------:|:---------:|
@@ -45,6 +46,7 @@ Properties|Type|Value|Default|Description|Required
 |wallet_address |string|Generate a wallet_address according to the official api documentation|none|The address of the currently logged in user|yes
 |login_random_secret|string|Generate a login_random_secret according to the official api documentation|none|none|yes
 |user_avatar |string|none|none|User avatar address|no
+***
 Properties for the room_payload parameter object
 ## When platform is opensea and the type is thread
 Properties for the room_payload parameter object
